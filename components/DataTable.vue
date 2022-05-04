@@ -39,6 +39,8 @@
           v-text-field(
             v-model="search"
             class="ma-2"
+            v-on:change="updateTableData"
+            v-on:keyup="updateTableData"
             label="Search in all fields")
         v-col(
           style="justify-content: end"
@@ -75,7 +77,7 @@ export default {
       this.filterList.forEach(filter => this.filters[filter] = '');
       this.search = '';
       this.updateTableData();
-    }
+    },
   }
 }
 </script>

@@ -3,7 +3,6 @@
     v-row
       v-col(cols)
         DataTable(
-          v-if="items.length"
           :headers="headers"
           :items="items"
           :dropdowns="dropdowns"
@@ -11,7 +10,7 @@
           @refetch="fetchData"
         )
         v-progress-circular(
-          v-else
+        v-if="false"
           width="2"
           color="rs__primary"
           indeterminate
@@ -61,7 +60,7 @@ export default {
     async fetchData({ filters = null , search = '' }) {
       await this.delay(1000)
 
-      let tableData = sales.results;
+      let tableData = sales.results.slice(1, 100);
 
       if (filters) {
         this.filterList.forEach(item => {
@@ -70,6 +69,11 @@ export default {
             row[item].toString().toLowerCase() === filters[item].value.toString().toLowerCase()
           )
         })
+      }
+
+      if(search) {
+        tableData = tableData.filter(item => JSON.stringify(item).toLowerCase().includes(search.toLowerCase())
+        )
       }
 
       this.items = tableData;
