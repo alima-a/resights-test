@@ -21,7 +21,7 @@ const DELAY_TIME = 3000;
 
 export default {
   components: {
-    DataTable
+    DataTable,
   },
   data() {
     return {
@@ -52,10 +52,10 @@ export default {
         'country',
         'currency',
         'year',
-        'color'
+        'color',
       ],
-      dropdowns: {}
-    }
+      dropdowns: {},
+    };
   },
   async created() {
     await this.fetchData(this.baseOptions);
@@ -68,56 +68,57 @@ export default {
         page,
         itemsPerPage,
       } = options;
-      this.loading = true
+      this.loading = true;
 
-      await this.delay(DELAY_TIME)
+      await this.delay(DELAY_TIME);
       let tableData = sales.results;
 
       tableData = tableData.filter(item => {
-        let matchByFilters = true
-        let matchBySearch = true
+        let matchByFilters = true;
+        let matchBySearch = true;
 
         if (filters) {
           this.filterList.forEach(filter => {
             if(filters[filter]?.value && filters[filter].value !== item[filter]) {
-              matchByFilters = false
+              matchByFilters = false;
             }
           })
         }
 
         if(search) {
-          matchBySearch = Object.values(item).join().toLowerCase().includes(search.toLowerCase())
+          const values = [ item.user.title, item.user.first_name, item.user.last_name, ...Object.values(item).join() ];
+          matchBySearch = values.join(' ').toLowerCase().includes(search.toLowerCase());
         }
 
-        return matchByFilters && matchBySearch
+        return matchByFilters && matchBySearch;
       })
 
-      const from = page - 1
-      const to = from + itemsPerPage
+      const from = page - 1;
+      const to = from + itemsPerPage;
 
       this.items = tableData.slice(from, to);
       this.pageCount = tableData.length;
       this.fillDropdowns();
-      this.loading = false
+      this.loading = false;
     },
     delay(ms) {
-      return new Promise(resolve => setTimeout(resolve, ms))
+      return new Promise(resolve => setTimeout(resolve, ms));
     },
     fillDropdowns() {
       const defaultDropdownValue = {
         name: 'Show all',
-        value: ''
-      }
+        value: '',
+      };
       this.filterList.forEach(filter => {
         const uniqueValues = Array.from(new Set(this.items.map(item => item[filter]))).sort();
         const dropdownData = uniqueValues.map(item => {
           return {
             name: item,
-            value: item
+            value: item,
           }
-        })
+        });
 
-        this.dropdowns[filter] = [ defaultDropdownValue, ...dropdownData ]
+        this.dropdowns[filter] = [ defaultDropdownValue, ...dropdownData, ];
       })
     },
   }

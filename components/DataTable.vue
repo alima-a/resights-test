@@ -58,6 +58,8 @@
 </template>
 
 <script>
+import debounce from 'lodash.debounce';
+
 export default {
   props: ['headers', 'items', 'dropdowns', 'filterList', 'loading', 'serverItemsLength'],
   data() {
@@ -67,7 +69,7 @@ export default {
         country: '',
         currency: '',
         color: '',
-        year: ''
+        year: '',
       },
       search: '',
       page: 1,
@@ -75,12 +77,12 @@ export default {
     }
   },
   watch: {
-    page() {
-      this.updateTableData()
-    },
-    itemsPerPage() {
-      this.updateTableData()
-    },
+    page: debounce(function (){
+      this.updateTableData();
+    }, 1000),
+    itemsPerPage: debounce(function (){
+      this.updateTableData();
+    }, 1000),
   },
   methods: {
     updateTableData() {
@@ -92,6 +94,9 @@ export default {
       }
       this.$emit('refetch', options);
     },
+    onSearch:debounce(function (){
+      this.updateTableData();
+    }, 1000),
     clearFilters(){
       this.filterList.forEach(filter => this.filters[filter] = '');
       this.search = '';
