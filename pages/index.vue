@@ -58,24 +58,28 @@ export default {
   },
   methods: {
     async fetchData({ filters = null , search = '' }) {
-      await this.delay(1000)
+      // await this.delay(1000)
+      let tableData = sales.results.slice(1, 25);
 
-      let tableData = sales.results.slice(1, 100);
+      tableData = tableData.filter(item => {
+        let matchByFilters = true
+        let matchBySearch = true
 
-      if (filters) {
-        this.filterList.forEach(item => {
-          if(!filters[item]) return;
-          tableData = tableData.filter(row =>
-            row[item].toString().toLowerCase() === filters[item].value.toString().toLowerCase()
-          )
-        })
-      }
+        if (filters) {
+          this.filterList.forEach(filter => {
+            if(!filters[filter]) return
+            if(filters[filter].value !== item[filter]) {
+              matchByFilters = false
+            }
+          })
+        }
 
-      if(search) {
-        tableData = tableData.filter(item => JSON.stringify(item).toLowerCase().includes(search.toLowerCase())
-        )
-      }
+        if(search) {
+          matchBySearch = JSON.stringify(item).toLowerCase().includes(search.toLowerCase())
+        }
 
+        return matchByFilters && matchBySearch
+      })
       this.items = tableData;
       this.fillDropdowns();
     },
