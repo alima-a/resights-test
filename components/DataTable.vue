@@ -3,7 +3,10 @@
     :headers="headers"
     :items="items"
     item-key="email"
-    :multi-sort="true"
+    :page="currentPage"
+    :items-per-page="pageSize"
+    :loading="loading"
+    :server-items-length="serverItemsLength"
     :footer-props="{'items-per-page-options': [10, 20, 50, 100]}"
     dense
   ).elevation-1.mt-10
@@ -56,7 +59,7 @@
 
 <script>
 export default {
-  props: ['headers', 'items', 'dropdowns', 'filterList'],
+  props: ['headers', 'items', 'dropdowns', 'filterList', 'loading', 'serverItemsLength', 'currentPage', 'pageSize'],
   data() {
     return {
       filters:{
@@ -66,7 +69,8 @@ export default {
         color: '',
         year: ''
       },
-      search: ''
+      search: '',
+      pagination: {}
     }
   },
   methods: {
@@ -87,5 +91,8 @@ export default {
     max-width: 100%
   .v-btn
     margin-left: auto
-
+</style>
+<style lang="sass">
+.v-data-table tr:nth-child(even)
+  background-color: #f2f2f2
 </style>

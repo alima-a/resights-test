@@ -6,20 +6,20 @@
           :headers="headers"
           :items="items"
           :dropdowns="dropdowns"
-          :filterList="filterList"
+          :filter-list="filterList"
+          :currentPage="pagination.currentPage",
+          :pageSize="pagination.size"
+          :server-items-length="pagination.total"
+          :loading="loading"
           @refetch="fetchData"
         )
-        v-progress-circular(
-        v-if="false"
-          width="2"
-          color="rs__primary"
-          indeterminate
-        ).mx-auto
 </template>
 
 <script>
 import DataTable from '~/components/DataTable.vue'
 import sales from '~/api/sales.js'
+
+const DELAY_TIME = 3000;
 
 export default {
   components: {
@@ -29,8 +29,12 @@ export default {
     return {
       sales,
       items: [],
-      pageSize: 10,
-      currentPage: 1,
+      pagination: {
+        page: 1,
+        itemsPerPage: 10,
+        pageCount: 0,
+      },
+      loading: true,
       headers: [
         {text: 'ID', value: 'id', align: 'start',},
         {text: 'Name', value: 'name'},
@@ -58,8 +62,12 @@ export default {
   },
   methods: {
     async fetchData({ filters = null , search = '' }) {
-      // await this.delay(1000)
-      let tableData = sales.results.slice(1, 25);
+      this.loading = true
+
+      await this.delay(DELAY_TIME)
+      let tableData = sales.results;
+
+      this.pagination.pageCount = tableData.length;
 
       tableData = tableData.filter(item => {
         let matchByFilters = true
@@ -67,8 +75,7 @@ export default {
 
         if (filters) {
           this.filterList.forEach(filter => {
-            if(!filters[filter]) return
-            if(filters[filter].value !== item[filter]) {
+            if(filters[filter]?.value && filters[filter].value !== item[filter]) {
               matchByFilters = false
             }
           })
@@ -80,8 +87,10 @@ export default {
 
         return matchByFilters && matchBySearch
       })
+
       this.items = tableData;
       this.fillDropdowns();
+      this.loading = false
     },
     delay(ms) {
       return new Promise(resolve => setTimeout(resolve, ms))
