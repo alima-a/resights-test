@@ -3,8 +3,8 @@
     :headers="headers"
     :items="items"
     item-key="email"
-    :page="currentPage"
-    :items-per-page="pageSize"
+    :page.sync="page"
+    :items-per-page.sync="itemsPerPage"
     :loading="loading"
     :server-items-length="serverItemsLength"
     :footer-props="{'items-per-page-options': [10, 20, 50, 100]}"
@@ -59,7 +59,7 @@
 
 <script>
 export default {
-  props: ['headers', 'items', 'dropdowns', 'filterList', 'loading', 'serverItemsLength', 'currentPage', 'pageSize'],
+  props: ['headers', 'items', 'dropdowns', 'filterList', 'loading', 'serverItemsLength'],
   data() {
     return {
       filters:{
@@ -70,12 +70,27 @@ export default {
         year: ''
       },
       search: '',
-      pagination: {}
+      page: 1,
+      itemsPerPage: 10,
     }
+  },
+  watch: {
+    page() {
+      this.updateTableData()
+    },
+    itemsPerPage() {
+      this.updateTableData()
+    },
   },
   methods: {
     updateTableData() {
-      this.$emit('refetch', { filters: this.filters, search: this.search });
+      const options = {
+        filters: this.filters,
+        search: this.search,
+        page: this.page,
+        itemsPerPage: this.itemsPerPage,
+      }
+      this.$emit('refetch', options);
     },
     clearFilters(){
       this.filterList.forEach(filter => this.filters[filter] = '');

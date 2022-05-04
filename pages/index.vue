@@ -7,9 +7,7 @@
           :items="items"
           :dropdowns="dropdowns"
           :filter-list="filterList"
-          :currentPage="pagination.currentPage",
-          :pageSize="pagination.size"
-          :server-items-length="pagination.total"
+          :server-items-length="pageCount"
           :loading="loading"
           @refetch="fetchData"
         )
@@ -29,11 +27,6 @@ export default {
     return {
       sales,
       items: [],
-      pagination: {
-        page: 1,
-        itemsPerPage: 10,
-        pageCount: 0,
-      },
       loading: true,
       headers: [
         {text: 'ID', value: 'id', align: 'start',},
@@ -47,6 +40,13 @@ export default {
         {text: 'Currency', value: 'currency'},
         {text: 'Color', value: 'color'}
       ],
+      pageCount: 0,
+      baseOptions: {
+        filters: null,
+        search: '',
+        page: 1,
+        itemsPerPage: 10,
+      },
       filterList: [
         'gender',
         'country',
@@ -58,16 +58,20 @@ export default {
     }
   },
   async created() {
-    await this.fetchData({ filters: null, search: ''});
+    await this.fetchData(this.baseOptions);
   },
   methods: {
-    async fetchData({ filters = null , search = '' }) {
+    async fetchData(options) {
+      const {
+        filters,
+        search,
+        page,
+        itemsPerPage,
+      } = options;
       this.loading = true
 
       await this.delay(DELAY_TIME)
       let tableData = sales.results;
-
-      this.pagination.pageCount = tableData.length;
 
       tableData = tableData.filter(item => {
         let matchByFilters = true
@@ -82,13 +86,17 @@ export default {
         }
 
         if(search) {
-          matchBySearch = JSON.stringify(item).toLowerCase().includes(search.toLowerCase())
+          matchBySearch = Object.values(item).join().toLowerCase().includes(search.toLowerCase())
         }
 
         return matchByFilters && matchBySearch
       })
 
-      this.items = tableData;
+      const from = page - 1
+      const to = from + itemsPerPage
+
+      this.items = tableData.slice(from, to);
+      this.pageCount = tableData.length;
       this.fillDropdowns();
       this.loading = false
     },
