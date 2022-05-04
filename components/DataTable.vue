@@ -3,23 +3,78 @@
     :headers="headers"
     :items="items"
     item-key="email"
+    :multi-sort="true"
+    :footer-props="{'items-per-page-options': [10, 20, 50, 100]}"
     dense
   ).elevation-1.mt-10
     template(v-slot:item.name='{ item }')
-      | {{ item.user.title + '. ' + item.user.first_name + ' ' + item.user.last_name }}
+      | {{ `${item.user.title}. ${item.user.first_name} ${item.user.last_name}` }}
     template(v-slot:item.email='{ item }' v-html)
       | <a :href="`mailto:${item.email}`">{{item.email}}</a>
     template(v-slot:item.color='{ item }')
       div(class="item-color" :style="`font-weight: bold; color: ${item.color};`")
         | {{item.color}}
+    template(v-slot:top)
+      v-container
+      v-row.ma-0
+        v-col(cols
+        v-for="item in filterList"
+          :key="item"
+        )
+          p.ma-0
+            | {{ item.toUpperCase() }}
+          v-select(
+            v-model="filters[item]"
+            :items="dropdowns[item]"
+            item-text="name"
+            item-value="value"
+            :label="item"
+            v-on:change="updateTableData()"
+            style="flex:1"
+            return-object
+            single-line)
+      v-row.ma-0
+        v-col(class="flex-md-grow-1 d-flex")
+          <v-icon>mdi-magnify</v-icon>
+          v-text-field(
+            v-model="search"
+            class="ma-2"
+            label="Search in all fields")
+        v-col(
+          style="justify-content: end"
+        ).d-flex
+          v-btn(
+            v-on:click="clearFilters"
+          ).ma-0
+            | Clear Filters
+    template(v-slot:no-data)
+      div(class="ma-4")
+        | No result
 </template>
 
 <script>
 export default {
-  props: ['headers', 'items'],
+  props: ['headers', 'items', 'dropdowns', 'filterList'],
   data() {
     return {
-
+      filters:{
+        gender: '',
+        country: '',
+        currency: '',
+        color: '',
+        year: ''
+      },
+      search: ''
+    }
+  },
+  methods: {
+    updateTableData() {
+      this.$emit('refetch', { filters: this.filters, search: this.search });
+    },
+    clearFilters(){
+      this.filterList.forEach(filter => this.filters[filter] = '');
+      this.search = '';
+      this.updateTableData();
     }
   }
 }
@@ -28,4 +83,7 @@ export default {
 <style lang="sass" scoped>
   .v-data-table
     max-width: 100%
+  .v-btn
+    margin-left: auto
+
 </style>
